@@ -61,29 +61,30 @@ $ python draw_sheets.py -v
 ```
 
 ### Dependencies
-This scripts uses `python3` and requires `numpy` and `matplotlib`. It has only
+This script uses `python3` and requires `numpy` and `matplotlib`. It has only
 been tested on Linux, but is expected to run on other platforms as well.
 
 ## Documentation
 The Canvas API is well documented. The function
-[group_categories.export](https://developerdocs.instructure.com/services/canvas/resources/group_categories#method.group_categories.export).
+[group_categories.export](https://developerdocs.instructure.com/services/canvas/resources/group_categories#method.group_categories.export)
 exports a CSV file formatted like
 [this](https://developerdocs.instructure.com/services/canvas/group-categories/file.group_category_csv)
-and needs the id of the group category. We can query all existing group
-categories using
+for a group category with a given ID. We can query all existing group
+categories with their names and IDs using
 [group_categories](https://developerdocs.instructure.com/services/canvas/resources/group_categories#method.group_categories.index)
 and find the one we need.
 
 ## Scheduling (optional)
 If you aready added an access token for the API nothing stops you from
 automatic this even more, by scheduling this script to run once a week (e.g. on
-Monday mornings) so that the new sign-in sheets will be ready when you need it.
+Monday mornings) so that the new sign-in sheets will be ready when you need
+them.
 
 ### Linux
 #### systemd
-To schedule this script to run once a week until it succeds once define a
+To schedule this script to run once a week until it succeds define a
 [systemd timer](https://wiki.archlinux.org/title/Systemd/Timers)
-like `canvas_groups.timer`in `/etc/systemd/system` or `~/.config/systemd/user`.
+like `canvas_groups.timer` in `~/.config/systemd/user`.
 ```
 [Unit]
 Description=Weekly trigger for PHYS/BIOPHYS 251 script
@@ -139,6 +140,9 @@ Load it with
 ```
 $ crontab /path/to/crontab
 ```
+
+This might not work if your machine is not running on Mondays at 12 PM and
+won't repeat failed tasks.
 
 ### Windows
 I don't know how Windows works, usually it doesn't.
