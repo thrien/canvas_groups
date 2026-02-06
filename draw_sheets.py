@@ -60,26 +60,10 @@ def canvas_import_csv(lab, verbose=False):
     except StopIteration:
         raise RuntimeError(f"Couldn't find groups for lab {lab:d} on Canvas.")
 
-    # Canvas might queue the download and report a url once its ready
-    while True:
-        # ask Canvas to export the groups for this lab as a CSV
-        with canvas_api(f"group_categories/{category["id"]}/export") \
-                as response:
-            content_type = response.headers.get("Content-Type", "")
-            if "application/json" in content_type:  # queued
-                job = json.load(response)
-                if job.get("url") is null:
-                    if verbose:
-                        print("Download queued, waiting for Canvas...")
-                    time.sleep(2)
-                    continue
-                else:
-                    if verbose:
-                        print("Canvas finished exporting. Downloading...")
-                    response = urlopen(job["url"])
-            # TODO make sure this file is closed
-            data = response.read()
-            break
+    # ask Canvas to export the groups for this lab as a CSV
+    with canvas_api(f"group_categories/{category["id"]}/export") \
+            as response:
+        data = response.read()
 
     # save CSV on disk
     filename = os.path.join(f"lab{lab:02d}", "canvas.csv")
