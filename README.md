@@ -63,7 +63,7 @@ This script relies on a CSV file from Canvas that defines the groups.
 ### Manual download
 For example, for Lab 1 navigate to **People > Groups > Lab 1**, which is
 [here](https://umich.instructure.com/courses/850281/groups#tab-67168) and
-select "Download Group Category Roster CSV" under the three dots at the top.
+select **Download Group Category Roster CSV** under the three dots at the top.
 
 Save the file as `./lab01/canvas.csv` and simply run
 ```
@@ -72,8 +72,8 @@ $ python draw_sheets.py -v
 
 ### Automatic download
 You can use the Canvas API to automatically download the CSV when needed. This
-requires an access token (i.e. password) that you can generate under **Account
-> Settings > Approved Integrations > New Access Token**.
+requires an access token (i.e. password) that you can generate under
+**Account > Settings > Approved Integrations > New Access Token**.
 
 Copy the token into
 ```
