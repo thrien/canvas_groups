@@ -12,7 +12,6 @@ Files are organized in the current directory like this:
 """
 # standard library
 import os.path
-import io
 import argparse
 import json
 from urllib.request import Request, urlopen
