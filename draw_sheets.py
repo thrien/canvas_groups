@@ -115,12 +115,13 @@ def draw(names, groups, title="Groups", smallfont=18, bigfont=25):
                 fontsize=smallfont, ha="left", va="top")
 
     # subplot for the instructor (me)
-    if 'I' in axes.keys() and instructor:
+    if 'I' in axes.keys():
         ax = axes['I']
         ax.set_axis_off()
-        ax.text(0.5, 0.5, format_name(instructor),
-                transform=ax.transAxes,
-                fontsize=smallfont, ha="center", va="center")
+        if instructor:
+            ax.text(0.5, 0.5, format_name(instructor),
+                    transform=ax.transAxes,
+                    fontsize=smallfont, ha="center", va="center")
 
     # TODO figure out why this sometimes leaves a margin on the right
     #      set margins by hand instead
