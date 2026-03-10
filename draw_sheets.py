@@ -133,9 +133,26 @@ def draw(names, groups, title="Groups", smallfont=18, bigfont=25):
 os.chdir(os.path.dirname(__file__))
 
 # already existing labs on disk
-labs = [int(entry.removeprefix("lab")) for entry in os.listdir()
-        if os.path.isdir(entry) and entry.startswith("lab")]
-labs.sort()
+prefix = "lab"
+existing_labs = [int(entry.removeprefix(prefix)) for entry in os.listdir()
+        if os.path.isdir(entry) and entry.startswith(prefix)]
+existing_labs.sort()
+
+
+def number_list(string, last=max(existing_labs, default=0)):
+    """Parse a comma-separated list of numbers and intervals, e.g. "10..15,25"
+    """
+    is_interval = lambda expr: ".." in expr
+    wrap = lambda n: last - n if n < 0 else n
+    
+    numbers = set()
+    for part in string.split(","):
+        if is_interval(part):
+            start, end = map(int, part.split(".."))
+            numbers.update(range(start, end + 1))
+        else:
+            numbers.add(int(part))
+    return sorted(wrap(n) for n in numbers)
 
 # parse user arguments
 description, epilog = __doc__.split("\n\n")
@@ -147,50 +164,48 @@ parser.add_argument("-f", "--force", action="store_true",
                     help="pull recent CSV from Canvas")
 parser.add_argument("-e", "--extensions", nargs="+", default=["pdf", "png"],
                     metavar="ext", help="output formats")
-parser.add_argument("-l", "--lab", type=int, default=-1 if TOKEN else max(labs),
-                    metavar="number", help="-1 means next lab")
+parser.add_argument("-l", "--labs", type=number_list,
+                    default=[max(existing_labs, default=0) + bool(TOKEN)] if existing_labs or TOKEN else [],
+                    metavar="numbers",
+                    help='e.g., "1-4,6", -1 means next lab')
 parser.add_argument("-s", "--sections", type=int, nargs="+", default=[15, 25],
                     metavar="section", help="your section numbers")
 args = parser.parse_args()
 
-# negative value means download the next lab
-if args.lab == -1:
-    lab = max(labs, default=0) + 1
-    if args.verbose:
-        print(f"Next lab is #{lab:d}.")
-else:
-    lab = args.lab
+if args.verbose:
+    print(f"Processing labs: [{', '.join(str(lab) for lab in args.labs)}].")
 
-# download CSV if necessary
-canvas_file = os.path.join(f"lab{lab:02d}", "canvas.csv")
-if args.force or not os.path.exists(canvas_file):
-    if args.verbose:
-        print(f"Downloading lab {lab:d} from Canvas.")
-    # TODO catch network error to simplify error message
-    canvas_import_csv(lab, verbose=args.verbose)
-else:
-    if args.verbose:
-        print(f'Using existing file "{canvas_file}".')
-
-# parse CSV
-dtype = [("name", "U50"), ("section", int), ("group", int)]
-conv = {0: format_name,                  # name
-        4: lambda name: name[-3:] or 0,  # sections
-        5: lambda name: name[-1:] or 0}  # group_name
-cols = list(sorted(conv.keys()))
-names, sections, groups = np.loadtxt(canvas_file,
-                                     delimiter=",", quotechar='"',
-                                     dtype=dtype, converters=conv,
-                                     skiprows=1, usecols=conv.keys(),
-                                     unpack=True)
-
-for section in args.sections:
-    mask = sections == section
-    fig = draw(names[mask], groups[mask],
-               title=f"Groups for Lab {lab:02d} Section {section:03d}")
-    for ext in args.extensions:
-        filename = os.path.join(f"lab{lab:02d}", f"groups{section:03d}.{ext}")
-        fig.savefig(filename)
+for lab in args.labs:
+    # download CSV if necessary
+    canvas_file = os.path.join(f"lab{lab:02d}", "canvas.csv")
+    if args.force or not os.path.exists(canvas_file):
         if args.verbose:
-            print(f'Output written to "{filename}"')
-    plt.close(fig)
+            print(f"Downloading lab {lab:d} from Canvas.")
+        # TODO catch network error to simplify error message
+        canvas_import_csv(lab, verbose=args.verbose)
+    else:
+        if args.verbose:
+            print(f'Using existing file "{canvas_file}".')
+
+    # parse CSV
+    dtype = [("name", "U50"), ("section", int), ("group", int)]
+    conv = {0: format_name,                  # name
+            4: lambda name: name[-3:] or 0,  # sections
+            5: lambda name: name[-1:] or 0}  # group_name
+    cols = list(sorted(conv.keys()))
+    names, sections, groups = np.loadtxt(canvas_file,
+                                        delimiter=",", quotechar='"',
+                                        dtype=dtype, converters=conv,
+                                        skiprows=1, usecols=conv.keys(),
+                                        unpack=True)
+
+    for section in args.sections:
+        mask = sections == section
+        fig = draw(names[mask], groups[mask],
+                title=f"Groups for Lab {lab:02d} Section {section:03d}")
+        for ext in args.extensions:
+            filename = os.path.join(f"lab{lab:02d}", f"groups{section:03d}.{ext}")
+            fig.savefig(filename)
+            if args.verbose:
+                print(f'Output written to "{filename}"')
+        plt.close(fig)
