@@ -1,17 +1,19 @@
-# Automatic sign-in sheets with groups for PHYS/BIOPHYS 251
+# Canvas tools for GSI in PHYS/BIOPHYS 251
 
-This script draws a sign-in sheet showing what group/table students are
+## Automatic sign-in sheets with groups
+
+This command draws a sign-in sheet showing what group/table students are
 assigned to. For example:
 
 ![Example group/table layout with fake names](example.png)
 
-## Usage
+### Usage
 
 To use this script:
 
 ```
-$ python draw_sheets.py -h
-usage: draw_sheets.py [-h] [-v] [-f] [-e ext [ext ...]] [-l number]
+$ python canvas.py sheets -h
+usage: canvas.py sheets [-h] [-v] [-f] [-e ext [ext ...]] [-l number]
                  [-s section [section ...]]
 
 Draw a sign-in sheet showing what group/table students are assigned to.
@@ -28,12 +30,28 @@ options:
 
 Files are organized in the current directory like this:
     .
-    ├── draw_sheets.py
+    ├── canvas.py
     └── lab01
         ├── canvas.csv
         ├── groups015.png
         └── groups025.png
 ```
+
+## Automatic templates for introduction slides
+
+This command creates a PowerPoint presentation from a template, changes the
+title and inserts the sign-in sheet on the second slide. The third slide
+contains the quiz code, which can be update automatically later.
+
+This part of the script has not been fully configured yet and contains some
+hardcoded paths, chosen for my specific setup.
+
+## Automatically update the quiz code
+
+This command pulls the current quiz access for the specified lab from Canvas
+and updates it on the third slide of the introduction.
+
+It assumes the slides have already been created.
 
 ## Configuration
 
@@ -92,6 +110,8 @@ Copy the token into
 ```
 TOKEN = "<your_access_token_here>"
 ```
+
+WARNING: Don't commit the TOKEN to git!
 
 Now you can automatically download the next labs groups from Canvas using
 
@@ -197,7 +217,8 @@ won't repeat failed tasks.
 
 ### Windows
 
-I don't know how Windows works, usually it doesn't.
+You can use the `Task Scheduler` program to create a new task that runs the
+executable once a week at a specific time.
 
 ### MacOS
 
@@ -206,3 +227,9 @@ I don't have the money for that...
 ## TODOs
 
 - document canvas functions in the source code
+- include screenshots of the Windows Task Scheduler
+- improve the "introduction" command
+  - create sign-in sheets if necessary
+  - allow configuration of file paths
+  - add more options
+- improve the "quiz_code" command
