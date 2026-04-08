@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Utilities for using Canvas as GSI
+"""Utilities for using Canvas as a GSI
 
-It is intented to be used by GSI for PHYSICS 151/251 at the University of
+It is intented to be used by GSIs for PHYSICS 151/251 at the University of
 Michigan.
 """
 # standard library
@@ -59,7 +59,7 @@ def _canvas_api(command, full_url=False, headers={}, verbose=False):
         raise RuntimeError("No Canvas API access token defined.")
     
     request = Request(command if full_url else f"{API_URL}/{command}",
-                      headers=headers|{"Authorization": f"Bearer {TOKEN}"})
+                      headers={"Authorization": f"Bearer {TOKEN}"}|headers)
     response = urlopen(request)
     if response.getheader("Content-Type").startswith("application/json"):
         content = json.load(response)
@@ -69,7 +69,7 @@ def _canvas_api(command, full_url=False, headers={}, verbose=False):
     try:  # reading next pages
         links = response.getheader("Link").split(",")
         pages = {rel.removeprefix(" rel=").strip('"'): link.strip("<>")
-                    for link, rel in map(lambda page: page.split(";"), links)}
+                 for link, rel in map(lambda page: page.split(";"), links)}
         content += _canvas_api(pages["next"], full_url=True, verbose=verbose)
     except (KeyError, AttributeError):
         pass
@@ -156,7 +156,7 @@ def _draw(names, groups, title="Groups", smallfont=18, bigfont=25):
     return fig
 
 
-def sheets_parser(parser):
+def _sheets_parser(parser):
     parser.add_argument("-v", "--verbose", action="store_true",
                         help="print status messages")
     parser.add_argument("-f", "--force", action="store_true",
@@ -226,10 +226,10 @@ def sheets(labs, sections,
                     print(f'Output written to "{filename}"')
             plt.close(fig)
 
-sheets.parser = sheets_parser
+sheets.parser = _sheets_parser
 
 
-def introduction_parser(parser):
+def _introduction_parser(parser):
     parser.add_argument("-l", "--lab", type=int,
                         default=max(existing_labs, default=0),
                         metavar="number")
@@ -280,7 +280,7 @@ def introduction(lab, section):
     # Save the modified presentation
     prs.save(f"{intros_path}\\PHYS251 Lab {lab:02d}.pptx")
 
-introduction.parser = introduction_parser
+introduction.parser = _introduction_parser
 
 
 def _get_quiz_code(lab, verbose=False):
@@ -296,7 +296,7 @@ def _get_quiz_code(lab, verbose=False):
     return quiz["access_code"]
 
 
-def quiz_code_parser(parser):
+def _quiz_code_parser(parser):
     parser.add_argument("-v", "--verbose", action="store_true",
                         help="print status messages")
     parser.add_argument("-l", "--lab", type=int,
@@ -332,7 +332,7 @@ def quiz_code(lab, verbose=False):
     if verbose:
         print(f'Updated presentation "{intro}".')
 
-quiz_code.parser = quiz_code_parser
+quiz_code.parser = _quiz_code_parser
 
 
 # make sure we are in the right directory
@@ -385,7 +385,7 @@ if __name__ == "__main__":
                                           description=description,
                                           epilog=epilog)
         # populate subparser with command-specific arguments 
-        # see e.g., sheets.parser = sheets_parser
+        # see e.g., sheets.parser = _sheets_parser
         command.parser(subparser)
     
     args = vars(parser.parse_args())
