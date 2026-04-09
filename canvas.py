@@ -27,7 +27,7 @@ class RawDescriptionDefaultsHelpFormatter(
 
 # Canvas API
 API_URL = "https://umich.instructure.com/api/v1"
-TOKEN = "1770~LmwFVBxH4Ja4Qw3TKLZc4LQ3cLQPauPtED36yJAyDX4MJkZPneJ7DXhC2mnmAWt8"
+TOKEN = ""
 COURSE_ID = 850281
 
 # Make sure we are in the right directory
@@ -39,7 +39,7 @@ existing_labs = [int(entry.removeprefix(prefix)) for entry in os.listdir()
                  if os.path.isdir(entry) and entry.startswith(prefix)]
 existing_labs.sort()
 
-instructor = "Thrien, Tobias"  # last name, first name
+instructor = ""  # last name, first name
 # int for group numbers, 'I' for the instructor (optional), '.' for nothing
 table_layout = [[ 1 , 'I', '.'],
                 [ 2 , '.',  8 ],
@@ -173,14 +173,14 @@ class FlatListAction(argparse.Action):
         setattr(namespace, self.dest, sum(values, start=[]))
 
 
-def interval(string, last=max(existing_labs, default=0)):
+def _interval(string, last=max(existing_labs, default=0)):
     """integers or intervals like a..b"""
-    wrap = lambda n: last - n if n < 0 else n
+    wraps = lambda s: last + 1 - int(s[1:]) if s.startswith("-") else int(s)
     if ".." in string:
-        a, b = map(wrap, map(int, string.split("..")))
+        a, b = map(wraps, string.split(".."))
         return list(range(a, b + 1))
     else:
-        return [wrap(int(string))]
+        return [wraps(string)]
 
 
 def _sheets_parser(parser):
@@ -191,11 +191,11 @@ def _sheets_parser(parser):
     parser.add_argument("-e", "--extensions", nargs="+",
                         default=["pdf", "png"],
                         metavar="ext", help="output formats")
-    parser.add_argument("-l", "--labs", type=interval, nargs="+",
+    parser.add_argument("-l", "--labs", type=_interval, nargs="+",
                         action=FlatListAction,
                         default=[max(existing_labs, default=0) + bool(TOKEN)]
                                 if existing_labs or TOKEN else [],
-                        metavar="numbers", help=interval.__doc__)
+                        metavar="numbers", help=_interval.__doc__)
     parser.add_argument("-s", "--sections", type=int, nargs="+",
                         default=[15, 25], metavar="section",
                         help="your section numbers")
@@ -263,7 +263,7 @@ def _introduction_parser(parser):
                         help="update quiz code")
     parser.add_argument("-l", "--lab", type=int,
                         default=max(existing_labs, default=0),
-                        metavar="number")
+                        metavar="number", help="the lab's number")
     parser.add_argument("-s", "--sections", type=int, nargs="+",
                         default=[15, 25], metavar="section",
                         help="your section numbers")
@@ -352,7 +352,7 @@ def _quiz_code_parser(parser):
                         help="print status messages")
     parser.add_argument("-l", "--lab", type=int,
                         default=max(existing_labs, default=0),
-                        metavar="number")
+                        metavar="number", help="the lab's number")
 
 
 def quiz_code(lab, verbose=False):
